@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Image Manager</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #fdfbfb, #ebedee);
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    }
+    .btn-delete {
+      background: rgba(255, 72, 72, 0.8);
+    }
+    .preview-card:hover .btn-delete {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-8">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Image Manager</h1>
+
+    <!-- Upload Section -->
+    <div class="glass rounded-xl p-6 shadow-xl mb-10">
+      <label class="block mb-2 font-medium text-gray-800">Upload Gallery Images</label>
+      <input type="file" id="imageInput" multiple accept="image/*"
+        class="block w-full text-sm text-gray-600 border border-gray-300 rounded-lg cursor-pointer bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+    </div>
+
+    <!-- Preview Section -->
+    <div>
+      <h2 class="text-xl font-semibold text-gray-700 mb-4">Preview</h2>
+      <div id="previewContainer" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+    <div class="relative max-w-3xl w-full p-4">
+      <img id="modalImage" class="rounded-lg max-h-[80vh] mx-auto shadow-2xl" src="" alt="Preview" />
+      <button id="closeModal" class="absolute top-4 right-4 text-white text-2xl font-bold hover:text-red-400">&times;</button>
+    </div>
+  </div>
+
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const closeModal = document.getElementById('closeModal');
+
+    imageInput.addEventListener('change', function (e) {
+      const files = Array.from(e.target.files);
+
+      files.forEach(file => {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const previewBox = document.createElement('div');
+          previewBox.className = 'relative preview-card glass p-2 rounded-xl shadow-md group transition-all duration-300';
+
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'w-full h-44 object-cover rounded-lg cursor-pointer';
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.innerText = '✕';
+          deleteBtn.className = 'absolute top-2 right-2 btn-delete text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity';
+          deleteBtn.addEventListener('click', () => previewBox.remove());
+
+          previewBox.appendChild(img);
+          previewBox.appendChild(deleteBtn);
+          previewContainer.appendChild(previewBox);
+        };
+
+        reader.readAsDataURL(file);
+      });
+
+      imageInput.value = null; // reset input
+    });
+
+    // Make previewContainer reorderable
+    new Sortable(previewContainer, {
+      animation: 150,
+      ghostClass: 'opacity-50'
+    });
+
+    // Open modal on image click
+    previewContainer.addEventListener('click', function (e) {
+      const target = e.target;
+      if (target.tagName === 'IMG') {
+        modalImage.src = target.src;
+        imageModal.classList.remove('hidden');
+      }
+    });
+
+    // Close modal
+    closeModal.addEventListener('click', () => {
+      imageModal.classList.add('hidden');
+    });
+
+    // Optional: click outside the modal image to close
+    imageModal.addEventListener('click', (e) => {
+      if (e.target === imageModal) {
+        imageModal.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
